@@ -3,7 +3,10 @@ from __future__ import annotations
 from time import sleep
 import random
 
-from constants import ANIMATION_DELAY_BUILD, ANIMATION_DELAY_BREAK, CHECK_BROKEN_IN_CELL, MAZE_SEED_OVERRIDE, MAZE_SEED
+from constants import (
+    ANIMATION_DELAY_BUILD, ANIMATION_DELAY_BREAK, ANIMATION_DELAY_DRAW, 
+    CHECK_BROKEN_IN_CELL, MAZE_SEED_OVERRIDE, MAZE_SEED
+)
 from window import Window, Line, Point
 
 
@@ -45,6 +48,8 @@ class Maze:
     def _animate(self, delay : float):
         if self._window == None:
             return
+        if self._window._running == False:
+            return
         
         self._window.redraw()
         sleep(delay)
@@ -56,9 +61,9 @@ class Maze:
         self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
 
     def _break_walls(self):
-        self._cells[0][0]._broken_in = True
-        self._draw_cell(0, 0, ANIMATION_DELAY_BREAK)
-        self._break_walls_i_r(0, 0)
+        self._cells[self._num_cols-1][self._num_rows-1]._broken_in = True
+        self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
+        self._break_walls_i_r(self._num_cols-1, self._num_rows-1)
 
     def _break_walls_i_r(self, x : int, y : int):
         possible_dir : list[tuple[int, int]] = []
@@ -74,17 +79,9 @@ class Maze:
             possible_dir.append((x, y+1))
 
         while len(possible_dir) > 0:
-            # TEST
-            #test_string = ""
-            #for x__, y__ in possible_dir:
-            #    test_string += f"({x__}, {y__}, broken_in: {self._cells[x__][y__]._broken_in})"
-            #print(f"List: {test_string}")
-            # TEST
             for x_, y_ in reversed(possible_dir):
                 if self._cells[x_][y_]._broken_in == True:
-
                     possible_dir.remove((x_, y_))
-                    #print(f"Removing ({x_}, {y_})")
             
             if len(possible_dir) == 0:
                 return
@@ -107,14 +104,69 @@ class Maze:
             else:
                 current_cell.has_upper_wall = False
                 next_cell.has_bottom_wall = False
-
-            #print(f"Going to the cell {nx},{ny}, status: {next_cell._broken_in}.")
             
             next_cell._broken_in = True
             self._draw_cell(nx, ny, ANIMATION_DELAY_BREAK)
 
             self._break_walls_i_r(nx, ny)
 
+    def solve(self) -> bool:        
+        return self._solve_i_r(0, 0, True)
+
+    def _solve_i_r(self, x : int, y : int, is_entrance : bool) -> bool:
+        if self._window != None and self._window._running == False:
+            return False
+        
+        self._animate(ANIMATION_DELAY_DRAW)
+        if x == self._num_cols-1 and y == self._num_rows-1:
+            return True
+        
+        current_cell = self._cells[x][y]
+        current_cell._visited = True
+
+        if not current_cell.has_right_wall and self._cells[x+1][y]._visited == False:
+            current_cell.draw_path_to(self._cells[x+1][y])
+            right = self._solve_i_r(x+1, y, False)
+            if right:
+                return True
+            else: 
+                current_cell.draw_path_to(self._cells[x+1][y], True)
+        else:
+            right = False
+
+        if not current_cell.has_bottom_wall and self._cells[x][y+1]._visited == False:
+            current_cell.draw_path_to(self._cells[x][y+1])
+            bottom = self._solve_i_r(x, y+1, False)
+            if bottom:
+                return True
+            else: 
+                current_cell.draw_path_to(self._cells[x][y+1], True)
+        else:
+            bottom = False
+
+        if not current_cell.has_left_wall and self._cells[x-1][y]._visited == False:
+            current_cell.draw_path_to(self._cells[x-1][y])
+            left = self._solve_i_r(x-1, y, False)
+            if left:
+                return True
+            else: 
+                current_cell.draw_path_to(self._cells[x-1][y], True)
+        else:
+            left = False
+
+        if not is_entrance and not current_cell.has_upper_wall and self._cells[x][y-1]._visited == False:
+            current_cell.draw_path_to(self._cells[x][y-1])
+            upper = self._solve_i_r(x, y-1, False)
+            if upper:
+                return True
+            else: 
+                current_cell.draw_path_to(self._cells[x][y-1], True)
+        else:
+            upper = False
+
+        return right or bottom or left or upper
+            
+        
 
 class Cell:
     def __init__(self, window : Window | None = None):
@@ -128,6 +180,7 @@ class Cell:
         self._y2 = -1
         self._window = window
         self._broken_in = False
+        self._visited = False
     
     def draw(self, x1, y1, size):
         self._x1 = x1

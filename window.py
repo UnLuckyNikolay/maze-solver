@@ -9,7 +9,7 @@ class Window:
         self._root.title("Maze Solver")
         self._canvas = Canvas(self._root, bg="white", height=height, width=width)
         self._canvas.pack(expand=1, fill=BOTH)
-        self._running = False
+        self._running = True
         self._root.protocol("WM_DELETE_WINDOW", self.close)
 
     
@@ -18,13 +18,13 @@ class Window:
         self._root.update()
 
     def wait_for_close(self):
-        self._running = True
         while self._running:
             self.redraw()
         print("Exiting the application.")
 
     def close(self):
         self._running = False
+        self._root.quit()
 
     def draw_line(self, line : Line, fill_color : str = "black"):
         line.draw(self._canvas, fill_color=fill_color)

@@ -1,6 +1,8 @@
 # Maze Generator and Solver
 
-WIP
+Generates and solves randomized mazes.
+
+Edit `constants.py` to change settings.
 
 ## Installation:
 1. Install Python:
