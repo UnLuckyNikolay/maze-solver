@@ -52,13 +52,13 @@ class Cell:
         self._window = window
     
     def draw(self, x1, y1, size):
-        if self._window == None:
-            return
-        
         self._x1 = x1
         self._x2 = x1 + size
         self._y1 = y1
         self._y2 = y1 + size
+
+        if self._window == None:
+            return
 
         if self.has_upper_wall:
             self._window.draw_line(Line(Point(self._x1, self._y1), Point(self._x2, self._y1)))
