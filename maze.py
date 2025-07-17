@@ -1,19 +1,30 @@
 from __future__ import annotations
 
-from window import Window, Line, Point
 from time import sleep
+import random
+
+from constants import ANIMATION_DELAY_BUILD, ANIMATION_DELAY_BREAK, CHECK_BROKEN_IN_CELL, MAZE_SEED_OVERRIDE, MAZE_SEED
+from window import Window, Line, Point
 
 
 class Maze:
-    def __init__(self, x1 : int, y1 : int, num_cols : int, num_rows : int, cell_size : int, window : Window | None = None):
+    def __init__(self, x1 : int, y1 : int, num_cols : int, num_rows : int, cell_size : int, window : Window | None = None, seed : int | None = None):
         self._window = window
         self._x1 = x1
         self._y1 = y1
         self._num_cols = num_cols
         self._num_rows = num_rows
         self._cell_size = cell_size
-        self._cells = []
+        self._cells : list[list[Cell]] = []
+
+        if MAZE_SEED_OVERRIDE:
+            random.seed(MAZE_SEED)
+        else:
+            random.seed(seed)
+        
         self._create_cells()
+        self._break_entrance_and_exit()
+        self._break_walls()
 
 
     def _create_cells(self):
@@ -21,22 +32,88 @@ class Maze:
             self._cells.append([])
             for y in range(self._num_rows):
                 self._cells[x].append(Cell(self._window))
-                self._draw_cell(x, y)
-                self._animate()
+                self._draw_cell(x, y, ANIMATION_DELAY_BUILD)
 
-    def _draw_cell(self, x : int, y : int):
+    def _draw_cell(self, x : int, y : int, delay : float):
         self._cells[x][y].draw(
             (self._x1 + x * self._cell_size),
             (self._y1 + y * self._cell_size),
             self._cell_size
         )
+        self._animate(delay)
 
-    def _animate(self):
+    def _animate(self, delay : float):
         if self._window == None:
             return
         
         self._window.redraw()
-        sleep(0.05)
+        sleep(delay)
+
+    def _break_entrance_and_exit(self):
+        self._cells[0][0].has_upper_wall = False
+        self._draw_cell(0, 0, ANIMATION_DELAY_BREAK)
+        self._cells[self._num_cols-1][self._num_rows-1].has_bottom_wall = False
+        self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
+
+    def _break_walls(self):
+        self._cells[0][0]._broken_in = True
+        self._draw_cell(0, 0, ANIMATION_DELAY_BREAK)
+        self._break_walls_i_r(0, 0)
+
+    def _break_walls_i_r(self, x : int, y : int):
+        possible_dir : list[tuple[int, int]] = []
+        current_cell = self._cells[x][y]
+
+        if x > 0 and self._cells[x-1][y]._broken_in == False:
+            possible_dir.append((x-1, y))
+        if y > 0 and self._cells[x][y-1]._broken_in == False:
+            possible_dir.append((x, y-1))
+        if x < self._num_cols-1 and self._cells[x+1][y]._broken_in == False:
+            possible_dir.append((x+1, y))
+        if y < self._num_rows-1 and self._cells[x][y+1]._broken_in == False:
+            possible_dir.append((x, y+1))
+
+        while len(possible_dir) > 0:
+            # TEST
+            #test_string = ""
+            #for x__, y__ in possible_dir:
+            #    test_string += f"({x__}, {y__}, broken_in: {self._cells[x__][y__]._broken_in})"
+            #print(f"List: {test_string}")
+            # TEST
+            for x_, y_ in reversed(possible_dir):
+                if self._cells[x_][y_]._broken_in == True:
+
+                    possible_dir.remove((x_, y_))
+                    #print(f"Removing ({x_}, {y_})")
+            
+            if len(possible_dir) == 0:
+                return
+
+            next_xy = random.choice(possible_dir)
+            nx = next_xy[0]
+            ny = next_xy[1]
+            next_cell : Cell = self._cells[nx][ny]
+            possible_dir.remove(next_xy)
+
+            if current_cell._x1 < next_cell._x1:
+                current_cell.has_right_wall = False
+                next_cell.has_left_wall = False
+            elif current_cell._x1 > next_cell._x1:
+                current_cell.has_left_wall = False
+                next_cell.has_right_wall = False
+            elif current_cell._y1 < next_cell._y1:
+                current_cell.has_bottom_wall = False
+                next_cell.has_upper_wall = False
+            else:
+                current_cell.has_upper_wall = False
+                next_cell.has_bottom_wall = False
+
+            #print(f"Going to the cell {nx},{ny}, status: {next_cell._broken_in}.")
+            
+            next_cell._broken_in = True
+            self._draw_cell(nx, ny, ANIMATION_DELAY_BREAK)
+
+            self._break_walls_i_r(nx, ny)
 
 
 class Cell:
@@ -50,6 +127,7 @@ class Cell:
         self._y1 = -1
         self._y2 = -1
         self._window = window
+        self._broken_in = False
     
     def draw(self, x1, y1, size):
         self._x1 = x1
@@ -62,12 +140,29 @@ class Cell:
 
         if self.has_upper_wall:
             self._window.draw_line(Line(Point(self._x1, self._y1), Point(self._x2, self._y1)))
+        else:
+            self._window.draw_line(Line(Point(self._x1, self._y1), Point(self._x2, self._y1)), "white")
+
         if self.has_right_wall:
             self._window.draw_line(Line(Point(self._x2, self._y1), Point(self._x2, self._y2)))
+        else:
+            self._window.draw_line(Line(Point(self._x2, self._y1), Point(self._x2, self._y2)), "white")
+
         if self.has_bottom_wall:
             self._window.draw_line(Line(Point(self._x2, self._y2), Point(self._x1, self._y2)))
+        else:
+            self._window.draw_line(Line(Point(self._x2, self._y2), Point(self._x1, self._y2)), "white")
+
         if self.has_left_wall:
             self._window.draw_line(Line(Point(self._x1, self._y2), Point(self._x1, self._y1)))
+        else:
+            self._window.draw_line(Line(Point(self._x1, self._y2), Point(self._x1, self._y1)), "white")
+
+        if CHECK_BROKEN_IN_CELL and self._broken_in:
+            self._window.draw_line(Line(Point(self._x1+5, self._y1+5), Point(self._x1+10, self._y1+10)), "green")
+            self._window.draw_line(Line(Point(self._x1+10, self._y1+10), Point(self._x1+15, self._y1+5)), "green")
+
+        
 
     def draw_path_to(self, to_cell : Cell, undo : bool = False):
         if self._window == None:
