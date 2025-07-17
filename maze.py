@@ -3,10 +3,7 @@ from __future__ import annotations
 from time import sleep
 import random
 
-from constants import (
-    ANIMATION_DELAY_BUILD, ANIMATION_DELAY_BREAK, ANIMATION_DELAY_DRAW, 
-    CHECK_BROKEN_IN_CELL, MAZE_SEED_OVERRIDE, MAZE_SEED
-)
+from constants import *
 from window import Window, Line, Point
 
 
@@ -131,6 +128,7 @@ class Maze:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x+1][y], True)
+                self._animate(ANIMATION_DELAY_UNDO)
         else:
             right = False
 
@@ -141,6 +139,7 @@ class Maze:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x][y+1], True)
+                self._animate(ANIMATION_DELAY_UNDO)
         else:
             bottom = False
 
@@ -151,6 +150,7 @@ class Maze:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x-1][y], True)
+                self._animate(ANIMATION_DELAY_UNDO)
         else:
             left = False
 
@@ -161,6 +161,7 @@ class Maze:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x][y-1], True)
+                self._animate(ANIMATION_DELAY_UNDO)
         else:
             upper = False
 
@@ -191,29 +192,68 @@ class Cell:
         if self._window == None:
             return
 
+        # Walls
         if self.has_upper_wall:
-            self._window.draw_line(Line(Point(self._x1, self._y1), Point(self._x2, self._y1)))
+            self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_WALL)
         else:
-            self._window.draw_line(Line(Point(self._x1, self._y1), Point(self._x2, self._y1)), "white")
+            self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_BACKGROUND)
 
         if self.has_right_wall:
-            self._window.draw_line(Line(Point(self._x2, self._y1), Point(self._x2, self._y2)))
+            self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_WALL)
         else:
-            self._window.draw_line(Line(Point(self._x2, self._y1), Point(self._x2, self._y2)), "white")
+            self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_BACKGROUND)
 
         if self.has_bottom_wall:
-            self._window.draw_line(Line(Point(self._x2, self._y2), Point(self._x1, self._y2)))
+            self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_WALL)
         else:
-            self._window.draw_line(Line(Point(self._x2, self._y2), Point(self._x1, self._y2)), "white")
+            self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_BACKGROUND)
 
         if self.has_left_wall:
-            self._window.draw_line(Line(Point(self._x1, self._y2), Point(self._x1, self._y1)))
+            self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_WALL)
         else:
-            self._window.draw_line(Line(Point(self._x1, self._y2), Point(self._x1, self._y1)), "white")
+            self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_BACKGROUND)
+
+        # Corners
+        self.draw_corner(Point(self._x1, self._y1))
+        self.draw_corner(Point(self._x1, self._y2))
+        self.draw_corner(Point(self._x2, self._y2))
+        self.draw_corner(Point(self._x2, self._y1))
 
         if CHECK_BROKEN_IN_CELL and self._broken_in:
-            self._window.draw_line(Line(Point(self._x1+5, self._y1+5), Point(self._x1+10, self._y1+10)), "green")
-            self._window.draw_line(Line(Point(self._x1+10, self._y1+10), Point(self._x1+15, self._y1+5)), "green")
+            self._window.draw_line(Line(Point(self._x1+5, self._y1+5), Point(self._x1+10, self._y1+10)), COLOR_CHECK)
+            self._window.draw_line(Line(Point(self._x1+10, self._y1+10), Point(self._x1+15, self._y1+5)), COLOR_CHECK)
+
+    def draw_wall(self, point1 : Point, point2 : Point, color : str):
+        if self._window == None:
+            return
+        
+        corner = int(WIDTH_CORNER / 2)
+        wall = int(WIDTH_WALL / 2)
+
+        if point1.x == point2.x:
+            if point1.y < point2.y:
+                self._window.draw_line(Line(Point(point1.x + wall, point1.y + corner), Point(point2.x + wall, point2.y - corner)), color)
+                self._window.draw_line(Line(Point(point1.x - wall, point1.y + corner), Point(point2.x - wall, point2.y - corner)), color)
+            if point1.y > point2.y:
+                self._window.draw_line(Line(Point(point1.x + wall, point1.y - corner), Point(point2.x + wall, point2.y + corner)), color)
+                self._window.draw_line(Line(Point(point1.x - wall, point1.y - corner), Point(point2.x - wall, point2.y + corner)), color)
+        elif point1.y == point2.y:
+            if point1.x < point2.x:
+                self._window.draw_line(Line(Point(point1.x + corner, point1.y - wall), Point(point2.x - corner, point2.y - wall)), color)
+                self._window.draw_line(Line(Point(point1.x + corner, point1.y + wall), Point(point2.x - corner, point2.y + wall)), color)
+            if point1.x > point2.x:
+                self._window.draw_line(Line(Point(point1.x - corner, point1.y - wall), Point(point2.x + corner, point2.y - wall)), color)
+                self._window.draw_line(Line(Point(point1.x - corner, point1.y + wall), Point(point2.x + corner, point2.y + wall)), color)
+    
+    def draw_corner(self, point : Point):
+        if self._window == None:
+            return
+        
+        dist = int(WIDTH_CORNER / 2)
+        self._window.draw_line(Line(Point(point.x - dist, point.y - dist), Point(point.x + dist, point.y - dist)), COLOR_WALL)
+        self._window.draw_line(Line(Point(point.x + dist, point.y - dist), Point(point.x + dist, point.y + dist)), COLOR_WALL)
+        self._window.draw_line(Line(Point(point.x + dist, point.y + dist), Point(point.x - dist, point.y + dist)), COLOR_WALL)
+        self._window.draw_line(Line(Point(point.x - dist, point.y + dist), Point(point.x - dist, point.y - dist)), COLOR_WALL)
 
         
 
@@ -221,7 +261,7 @@ class Cell:
         if self._window == None:
             return
         
-        color = "red" if not undo else "gray"
+        color = COLOR_PATH_CURRENT if not undo else COLOR_PATH_UNDO
 
         self._window.draw_line(Line(
             Point(int((self._x1 + self._x2)/2), int((self._y1 + self._y2)/2)), 

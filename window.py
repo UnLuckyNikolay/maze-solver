@@ -2,15 +2,21 @@ from __future__ import annotations
 
 from tkinter import Tk, BOTH, Canvas
 
+from constants import *
+
 
 class Window:
     def __init__(self, width : int, height : int):
         self._root = Tk() # Check args
         self._root.title("Maze Solver")
-        self._canvas = Canvas(self._root, bg="white", height=height, width=width)
+        self._root.update()
+        self._root.attributes("-fullscreen", True)
+        self._canvas = Canvas(self._root, bg=COLOR_BACKGROUND, height=height, width=width)
         self._canvas.pack(expand=1, fill=BOTH)
         self._running = True
         self._root.protocol("WM_DELETE_WINDOW", self.close)
+        self._root.bind("<Escape>", lambda x: self.close())
+        self._root.bind("<Alt-F4>", lambda x: self.close())
 
     
     def redraw(self):
@@ -26,7 +32,7 @@ class Window:
         self._running = False
         self._root.quit()
 
-    def draw_line(self, line : Line, fill_color : str = "black"):
+    def draw_line(self, line : Line, fill_color : str = COLOR_WALL):
         line.draw(self._canvas, fill_color=fill_color)
 
 class Point:
@@ -43,5 +49,5 @@ class Line:
         canvas.create_line(
             self.point1.x, self.point1.y,
             self.point2.x, self.point2.y,
-            fill=fill_color, width=2
+            fill=fill_color, width=WIDTH_LINE
         )

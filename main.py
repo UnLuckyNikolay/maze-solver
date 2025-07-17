@@ -1,14 +1,15 @@
 from time import sleep
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, MAZE_COLUMNS, MAZE_ROWS, RESTART_DELAY
+from constants import *
 from window import Window
 from maze import Maze
 
 
 def main():
     window = Window(SCREEN_WIDTH, SCREEN_HEIGHT)
+    sleep(0.2)
     while window._running:
-        maze = Maze(50, 50, MAZE_COLUMNS, MAZE_ROWS, 50, window)
+        maze = Maze(MAZE_X, MAZE_Y, MAZE_COLUMNS, MAZE_ROWS, 50, window)
         maze.solve()
         if window._running:
             sleep(RESTART_DELAY)
