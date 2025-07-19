@@ -131,9 +131,9 @@ class Maze:
         # Pathing checks
         # Right
         if (
-                not current_cell.has_right_wall 
-                and self._cells[x+1][y]._visited == False
-            ):
+            not current_cell.has_right_wall 
+            and self._cells[x+1][y]._visited == False
+        ):
             current_cell.draw_path_to(self._cells[x+1][y])
             right = self._solve_i_r(x+1, y)
             if right:
@@ -146,9 +146,9 @@ class Maze:
 
         # Bottom
         if (
-                not current_cell.has_bottom_wall
-                and self._cells[x][y+1]._visited == False
-            ):
+            not current_cell.has_bottom_wall
+            and self._cells[x][y+1]._visited == False
+        ):
             current_cell.draw_path_to(self._cells[x][y+1])
             bottom = self._solve_i_r(x, y+1)
             if bottom:
@@ -161,51 +161,49 @@ class Maze:
 
         # Left
         if (
-                not current_cell.has_left_wall
-                and y > 0
-                and y < self._num_rows - 1
-                and self._cells[x-1][y]._visited == False
+            not current_cell.has_left_wall
+            and self._cells[x-1][y]._visited == False
+        ):
+            if (
+                y == 0
+                or y == self._num_rows - 1
             ):
-            current_cell.draw_path_to(self._cells[x-1][y])
-            left = self._solve_i_r(x-1, y)
-            if left:
-                return True
-            else: 
-                current_cell.draw_path_to(self._cells[x-1][y], True)
-                self._animate(ANIMATION_DELAY_UNDO)
-        elif (
-                not current_cell.has_left_wall
-                and self._cells[x-1][y]._visited == False
-                and (y == 0 or y == self._num_rows - 1)
-              ):
-            left = False
-            if DEBUG_CHECK_DEAD_END:
-                current_cell.draw_cross(CellWall.LEFT)
+                left = False
+                if DEBUG_CHECK_DEAD_END:
+                    current_cell.draw_cross(CellWall.LEFT)
+                    self._animate(ANIMATION_DELAY_UNDO)
+            else:
+                current_cell.draw_path_to(self._cells[x-1][y])
+                left = self._solve_i_r(x-1, y)
+                if left:
+                    return True
+                else: 
+                    current_cell.draw_path_to(self._cells[x-1][y], True)
+                    self._animate(ANIMATION_DELAY_UNDO)
         else:
             left = False
 
         # Top
         if (
-                not current_cell.has_top_wall
-                and x > 0
-                and x < self._num_cols - 1
-                and self._cells[x][y-1]._visited == False
+            not current_cell.has_top_wall
+            and self._cells[x][y-1]._visited == False
+        ):
+            if (
+                x == 0 
+                or x == self._num_cols - 1
             ):
-            current_cell.draw_path_to(self._cells[x][y-1])
-            top = self._solve_i_r(x, y-1)
-            if top:
-                return True
-            else: 
-                current_cell.draw_path_to(self._cells[x][y-1], True)
-                self._animate(ANIMATION_DELAY_UNDO)
-        elif (
-                not current_cell.has_top_wall
-                and self._cells[x][y-1]._visited == False
-                and (x == 0 or x == self._num_cols - 1)
-            ):
-            top = False
-            if DEBUG_CHECK_DEAD_END:
-                current_cell.draw_cross(CellWall.TOP)
+                top = False
+                if DEBUG_CHECK_DEAD_END:
+                    current_cell.draw_cross(CellWall.TOP)
+                    self._animate(ANIMATION_DELAY_UNDO)
+            else:
+                current_cell.draw_path_to(self._cells[x][y-1])
+                top = self._solve_i_r(x, y-1)
+                if top:
+                    return True
+                else: 
+                    current_cell.draw_path_to(self._cells[x][y-1], True)
+                    self._animate(ANIMATION_DELAY_UNDO)
         else:
             top = False
 
