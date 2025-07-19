@@ -9,7 +9,7 @@ def main():
     window = Window(SCREEN_WIDTH, SCREEN_HEIGHT)
     sleep(0.2)
     while window._running:
-        maze = Maze(MAZE_X, MAZE_Y, MAZE_COLUMNS, MAZE_ROWS, 50, window)
+        maze = Maze(MAZE_X, MAZE_Y, MAZE_COLUMNS, MAZE_ROWS, CELL_SIZE, window)
         maze.solve()
         interruptible_sleep(window, 5)
         window._canvas.delete("all")

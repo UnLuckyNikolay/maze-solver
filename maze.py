@@ -114,19 +114,33 @@ class Maze:
 
             self._break_walls_i_r(nx, ny)
 
-    def solve(self) -> bool:        
+    def solve(self) -> bool:     
+        if self._window != None:
+            self._window.draw_line(
+                Line(
+                    Point(self._cells[0][0]._center_x, self._cells[0][0]._center_y - self._cell_size), 
+                    Point(self._cells[0][0]._center_x, self._cells[0][0]._center_y)
+                ), COLOR_PATH_CURRENT
+            )
         return self._solve_i_r(0, 0)
 
     def _solve_i_r(self, x : int, y : int) -> bool:
         if self._window != None and self._window._running == False:
             return False
         
-        self._animate(ANIMATION_DELAY_DRAW)
-        if x == self._num_cols-1 and y == self._num_rows-1:
-            return True
-        
         current_cell = self._cells[x][y]
         current_cell._visited = True
+        
+        self._animate(ANIMATION_DELAY_DRAW)
+        if x == self._num_cols-1 and y == self._num_rows-1:
+            if self._window != None:
+                self._window.draw_line(
+                    Line(
+                        Point(current_cell._center_x, current_cell._center_y), 
+                        Point(current_cell._center_x, current_cell._center_y + self._cell_size)
+                    ), COLOR_PATH_CURRENT
+                )
+            return True
 
         # Pathing checks
         # Right
@@ -219,8 +233,10 @@ class Cell:
         self.has_left_wall = True
         self._x1 = -1
         self._x2 = -1
+        self._center_x = -1
         self._y1 = -1
         self._y2 = -1
+        self._center_y = -1
         self._window = window
         self._broken_in = False
         self._visited = False
@@ -228,8 +244,10 @@ class Cell:
     def draw(self, x1, y1, size):
         self._x1 = x1
         self._x2 = x1 + size
+        self._center_x = int((2 * x1 + size) / 2)
         self._y1 = y1
         self._y2 = y1 + size
+        self._center_y = int((2 * y1 + size) / 2)
 
         if self._window == None:
             return
@@ -305,15 +323,15 @@ class Cell:
         match (wall):
             case CellWall.RIGHT:
                 x = self._x2
-                y = int((self._y1 + self._y2) / 2)
+                y = self._center_y
             case CellWall.BOTTOM:
-                x = int((self._x1 + self._x2) / 2)
+                x = self._center_x
                 y = self._y2
             case CellWall.LEFT:
                 x = self._x1
-                y = int((self._y1 + self._y2) / 2)
+                y = self._center_y
             case CellWall.TOP:
-                x = int((self._x1 + self._x2) / 2)
+                x = self._center_x
                 y = self._y1
         
         size_half = 5
@@ -327,6 +345,6 @@ class Cell:
         color = COLOR_PATH_CURRENT if not undo else COLOR_PATH_UNDO
 
         self._window.draw_line(Line(
-            Point(int((self._x1 + self._x2)/2), int((self._y1 + self._y2)/2)), 
-            Point(int((to_cell._x1 + to_cell._x2)/2), int((to_cell._y1 + to_cell._y2)/2))
+            Point(self._center_x, self._center_y), 
+            Point(to_cell._center_x, to_cell._center_y)
         ), fill_color=color)

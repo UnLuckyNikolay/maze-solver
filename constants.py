@@ -10,14 +10,16 @@ MAZE_ROWS = 20 # 20
 MAZE_SEED_OVERRIDE = False
 MAZE_SEED = 1
 
+CELL_SIZE = 50
+
     # TIMERS
 
 # Delay between restarts, in seconds, float
 RESTART_DELAY = 5 # 5
 # Delay between each update while drawing a maze, in seconds, float
-ANIMATION_DELAY_BUILD = 0 # 0.005
+ANIMATION_DELAY_BUILD = 0.001 # 0.005
 # Delay between each update while breaking walls, in seconds, float
-ANIMATION_DELAY_BREAK = 0 # 0.03
+ANIMATION_DELAY_BREAK = 0.015 # 0.03
 # Delay between each update while pathing through, in seconds, float
 ANIMATION_DELAY_DRAW = 0.05 # 0.05
 # Delay between each update while going backwards, in seconds, float
@@ -27,6 +29,7 @@ ANIMATION_DELAY_UNDO = 0.03 # 0.03
 
 COLOR_BACKGROUND = "gray10"
 COLOR_WALL = "antiquewhite2"
+#COLOR_WALL2 = "cornsilk4"
 COLOR_PATH_CURRENT = "chartreuse4"
 COLOR_PATH_UNDO = "brown4"
 
