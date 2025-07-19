@@ -3,8 +3,6 @@ SCREEN_FULLSCREEN = True
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-CELL_3D = True
-
     # MAZE
 
 MAZE_X = 35
@@ -21,7 +19,7 @@ CELL_SIZE = 50
 # Delay between restarts, in seconds, float
 RESTART_DELAY = 5 # 5
 # Delay between each update while drawing a maze, in seconds, float
-ANIMATION_DELAY_BUILD = 0.001 # 0.005
+ANIMATION_DELAY_BUILD = 0.01 # 0.005
 # Delay between each update while breaking walls, in seconds, float
 ANIMATION_DELAY_BREAK = 0.015 # 0.03
 # Delay between each update while pathing through, in seconds, float

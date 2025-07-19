@@ -270,31 +270,38 @@ class Cell:
         #self.draw_corner(Point(self._x1, self._y2))
         #self.draw_corner(Point(self._x2, self._y2))
         #self.draw_corner(Point(self._x2, self._y1))
-        self.corner_tl = Wall(self._x1, self._y1, WallType.CORNER, self._window)
-        self.corner_tr = Wall(self._x2, self._y1, WallType.CORNER, self._window)
-        self.corner_bl = Wall(self._x1, self._y2, WallType.CORNER, self._window)
+        if (self._x_grid == 0 and self._y_grid == 0):
+            self.corner_tl = Wall(self._x1, self._y1, WallType.CORNER, self._window)
+        if (self._y_grid == 0):
+            self._wall_t = Wall(self._x_center, self._y1, WallType.HORIZONTAL, self._window)
+            self.corner_tr = Wall(self._x2, self._y1, WallType.CORNER, self._window)
+        if (self._x_grid == 0):
+            self._wall_l = Wall(self._x1, self._y_center, WallType.VERTICAL, self._window)
+            self.corner_bl = Wall(self._x1, self._y2, WallType.CORNER, self._window)
+        self._wall_b = Wall(self._x_center, self._y2, WallType.HORIZONTAL, self._window)
+        self._wall_r = Wall(self._x2, self._y_center, WallType.VERTICAL, self._window)
         self.corner_br = Wall(self._x2, self._y2, WallType.CORNER, self._window)
 
         # Walls
-        if self.has_top_wall:
-            self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_WALL_TOP)
-        else:
-            self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_BACKGROUND)
+        #if self.has_top_wall:
+        #    self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_WALL_TOP)
+        #else:
+        #    self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_BACKGROUND)
 
-        if self.has_right_wall:
-            self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_WALL_TOP)
-        else:
-            self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_BACKGROUND)
+        #if self.has_right_wall:
+        #    self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_WALL_TOP)
+        #else:
+        #    self.draw_wall(Point(self._x2, self._y1), Point(self._x2, self._y2), COLOR_BACKGROUND)
 
-        if self.has_bottom_wall:
-            self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_WALL_TOP)
-        else:
-            self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_BACKGROUND)
+        #if self.has_bottom_wall:
+        #    self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_WALL_TOP)
+        #else:
+        #    self.draw_wall(Point(self._x2, self._y2), Point(self._x1, self._y2), COLOR_BACKGROUND)
 
-        if self.has_left_wall:
-            self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_WALL_TOP)
-        else:
-            self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_BACKGROUND)
+        #if self.has_left_wall:
+        #    self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_WALL_TOP)
+        #else:
+        #    self.draw_wall(Point(self._x1, self._y2), Point(self._x1, self._y1), COLOR_BACKGROUND)
 
         # Debug check marks for broken in cells
         if DEBUG_CHECK_BROKEN_IN_CELL and self._broken_in:
@@ -373,33 +380,97 @@ class Wall:
 
         match (type):
             case WallType.CORNER:
-                self._light = self._window._canvas.create_polygon(
-                    (int(x - WIDTH_CORNER / 2 - HEIGHT_WALL), int(y + WIDTH_CORNER / 2 - HEIGHT_WALL)),
-                    (int(x + WIDTH_CORNER / 2 - HEIGHT_WALL), int(y + WIDTH_CORNER / 2 - HEIGHT_WALL)),
-                    (int(x + WIDTH_CORNER / 2), int(y + WIDTH_CORNER / 2)),
-                    (int(x - WIDTH_CORNER / 2), int(y + WIDTH_CORNER / 2)),
-                    outline=COLOR_WALL_LIGHT,
-                    width=WIDTH_LINE,
-                    fill=COLOR_WALL_LIGHT_FILL
-                )
-                self._dark = self._window._canvas.create_polygon(
-                    (int(x + WIDTH_CORNER / 2 - HEIGHT_WALL), int(y - WIDTH_CORNER / 2 - HEIGHT_WALL)),
-                    (int(x + WIDTH_CORNER / 2 - HEIGHT_WALL), int(y + WIDTH_CORNER / 2 - HEIGHT_WALL)),
-                    (int(x + WIDTH_CORNER / 2), int(y + WIDTH_CORNER / 2)),
-                    (int(x + WIDTH_CORNER / 2), int(y - WIDTH_CORNER / 2)),
-                    outline=COLOR_WALL_DARK,
-                    width=WIDTH_LINE,
-                    fill=COLOR_WALL_DARK_FILL
-                )
+                corner = int(WIDTH_CORNER / 2)
+                
+                if HEIGHT_WALL > 0:
+                    self._light = self._window._canvas.create_polygon(
+                        ((x - corner - HEIGHT_WALL), (y + corner - HEIGHT_WALL)),
+                        ((x + corner - HEIGHT_WALL), (y + corner - HEIGHT_WALL)),
+                        ((x + corner), (y + corner)),
+                        ((x - corner), (y + corner)),
+                        outline=COLOR_WALL_LIGHT,
+                        width=WIDTH_LINE,
+                        fill=COLOR_WALL_LIGHT_FILL
+                    )
+                    self._dark = self._window._canvas.create_polygon(
+                        ((x + corner - HEIGHT_WALL), (y - corner - HEIGHT_WALL)),
+                        ((x + corner - HEIGHT_WALL), (y + corner - HEIGHT_WALL)),
+                        ((x + corner), (y + corner)),
+                        ((x + corner), (y - corner)),
+                        outline=COLOR_WALL_DARK,
+                        width=WIDTH_LINE,
+                        fill=COLOR_WALL_DARK_FILL
+                    )
+                else:
+                    self._light = None
+                    self._dark = None
+                    
                 self._top = self._window._canvas.create_rectangle(
-                    (int(x - WIDTH_CORNER / 2 - HEIGHT_WALL), int(y - WIDTH_CORNER / 2 - HEIGHT_WALL)),
-                    (int(x + WIDTH_CORNER / 2 - HEIGHT_WALL), int(y + WIDTH_CORNER / 2 - HEIGHT_WALL)),
+                    ((x - corner - HEIGHT_WALL), (y - corner - HEIGHT_WALL)),
+                    ((x + corner - HEIGHT_WALL), (y + corner - HEIGHT_WALL)),
                     outline=COLOR_WALL_TOP,
                     width=WIDTH_LINE,
                     fill=COLOR_WALL_TOP_FILL
                 )
 
+            case WallType.HORIZONTAL:
+                corner = int(WIDTH_CORNER / 2)
+                wall = int(WIDTH_WALL / 2)
+                cell = int(CELL_SIZE / 2)
+                self._dark = None
+
+                if HEIGHT_WALL > 0:
+                    self._light = self._window._canvas.create_polygon(
+                        ((x - cell + corner - HEIGHT_WALL), (y + wall - HEIGHT_WALL)),
+                        ((x + cell - corner - HEIGHT_WALL), (y + wall - HEIGHT_WALL)),
+                        ((x + cell - corner), (y + wall)),
+                        ((x - cell + corner), (y + wall)),
+                        outline=COLOR_WALL_LIGHT,
+                        width=WIDTH_LINE,
+                        fill=COLOR_WALL_LIGHT_FILL
+                    )
+                else:
+                    self._light = None
+
+                self._top = self._window._canvas.create_rectangle(
+                    ((x - cell + corner - HEIGHT_WALL), (y - wall - HEIGHT_WALL)),
+                    ((x + cell - corner - HEIGHT_WALL), (y + wall - HEIGHT_WALL)),
+                    outline=COLOR_WALL_TOP,
+                    width=WIDTH_LINE,
+                    fill=COLOR_WALL_TOP_FILL
+                )
+
+            case WallType.VERTICAL:
+                corner = int(WIDTH_CORNER / 2)
+                wall = int(WIDTH_WALL / 2)
+                cell = int(CELL_SIZE / 2)
+                self._light = None
+
+                if HEIGHT_WALL > 0:
+                    self._dark = self._window._canvas.create_polygon(
+                        ((x + wall - HEIGHT_WALL), (y - cell + corner - HEIGHT_WALL)),
+                        ((x + wall - HEIGHT_WALL), (y + cell - corner - HEIGHT_WALL)),
+                        ((x + wall), (y + cell - corner)),
+                        ((x + wall), (y - cell + corner)),
+                        outline=COLOR_WALL_DARK,
+                        width=WIDTH_LINE,
+                        fill=COLOR_WALL_DARK_FILL
+                    )
+                else:
+                    self._dark = None
+
+                self._top = self._window._canvas.create_rectangle(
+                    ((x - wall - HEIGHT_WALL), (y - cell + corner - HEIGHT_WALL)),
+                    ((x + wall - HEIGHT_WALL), (y + cell - corner - HEIGHT_WALL)),
+                    outline=COLOR_WALL_TOP,
+                    width=WIDTH_LINE,
+                    fill=COLOR_WALL_TOP_FILL
+                )
+
+
     def delete(self):
         self._window._canvas.delete(self._top)
-        self._window._canvas.delete(self._dark)
-        self._window._canvas.delete(self._light)
+        if self._dark != None:
+            self._window._canvas.delete(self._dark)
+        if self._light != None:
+            self._window._canvas.delete(self._light)
