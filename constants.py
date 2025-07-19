@@ -19,9 +19,9 @@ CELL_SIZE = 50
 # Delay between restarts, in seconds, float
 RESTART_DELAY = 5 # 5
 # Delay between each update while drawing a maze, in seconds, float
-ANIMATION_DELAY_BUILD = 0.01 # 0.005
+ANIMATION_DELAY_BUILD = 0.001 # 0.001
 # Delay between each update while breaking walls, in seconds, float
-ANIMATION_DELAY_BREAK = 0.015 # 0.03
+ANIMATION_DELAY_BREAK = 0.015 # 0.015
 # Delay between each update while pathing through, in seconds, float
 ANIMATION_DELAY_DRAW = 0.05 # 0.05
 # Delay between each update while going backwards, in seconds, float
@@ -29,7 +29,7 @@ ANIMATION_DELAY_UNDO = 0.03 # 0.03
 
     # COLORS
 
-COLOR_BACKGROUND = "gray15"
+COLOR_BACKGROUND = "gray17"
 COLOR_WALL_TOP = "antiquewhite2"
 COLOR_WALL_TOP_FILL = COLOR_BACKGROUND
 COLOR_WALL_LIGHT = "cornsilk4"
@@ -41,11 +41,10 @@ COLOR_PATH_UNDO = "brown4"
 
     # LINE WIDTH
 
-# Keep these even
 WIDTH_LINE = 2
-WIDTH_WALL = 4
-HEIGHT_WALL = 4
-WIDTH_CORNER = 12
+WIDTH_WALL = 4 # Keep even
+HEIGHT_WALL = 5
+WIDTH_CORNER = 12 # Keep even
 
     # DEBUG
 

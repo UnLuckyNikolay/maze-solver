@@ -11,7 +11,7 @@ def main():
     while window._running:
         #maze = Maze(MAZE_X, MAZE_Y, 3, 3, CELL_SIZE, window) # TEST
         maze = Maze(MAZE_X, MAZE_Y, MAZE_COLUMNS, MAZE_ROWS, CELL_SIZE, window)
-        #maze.solve()
+        maze.solve()
         interruptible_sleep(window, RESTART_DELAY)
         window._canvas.delete("all")
     window.wait_for_close()

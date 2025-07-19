@@ -54,7 +54,7 @@ class Maze:
                 self._draw_cell(x, y, ANIMATION_DELAY_BUILD)
 
     def _draw_cell(self, x : int, y : int, delay : float):
-        self._cells[x][y].redraw()
+        self._cells[x][y].draw()
         self._animate(delay)
 
     def _animate(self, delay : float):
@@ -68,13 +68,18 @@ class Maze:
 
     def _break_entrance_and_exit(self):
         self._cells[0][0].has_top_wall = False
-        self._draw_cell(0, 0, ANIMATION_DELAY_BREAK)
+        if self._cells[0][0]._wall_t != None:
+            self._cells[0][0]._wall_t.delete()
+            self._animate(ANIMATION_DELAY_BREAK)
+        
         self._cells[self._num_cols-1][self._num_rows-1].has_bottom_wall = False
-        self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
+        if self._cells[self._num_cols-1][self._num_rows-1]._wall_b != None:
+            self._cells[self._num_cols-1][self._num_rows-1]._wall_b.delete() # type: ignore
+            self._animate(ANIMATION_DELAY_BREAK)
 
     def _break_walls(self):
         self._cells[self._num_cols-1][self._num_rows-1]._broken_in = True
-        self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
+        #self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
         self._break_walls_i_r(self._num_cols-1, self._num_rows-1)
 
     def _break_walls_i_r(self, x : int, y : int):
@@ -107,18 +112,30 @@ class Maze:
             if current_cell._x1 < next_cell._x1:
                 current_cell.has_right_wall = False
                 next_cell.has_left_wall = False
+                if current_cell._wall_r != None:
+                    current_cell._wall_r.delete()
+                    self._animate(ANIMATION_DELAY_BREAK)
             elif current_cell._x1 > next_cell._x1:
                 current_cell.has_left_wall = False
                 next_cell.has_right_wall = False
+                if next_cell._wall_r != None:
+                    next_cell._wall_r.delete()
+                    self._animate(ANIMATION_DELAY_BREAK)
             elif current_cell._y1 < next_cell._y1:
                 current_cell.has_bottom_wall = False
                 next_cell.has_top_wall = False
+                if current_cell._wall_b != None:
+                    current_cell._wall_b.delete()
+                    self._animate(ANIMATION_DELAY_BREAK)
             else:
                 current_cell.has_top_wall = False
                 next_cell.has_bottom_wall = False
+                if next_cell._wall_b != None:
+                    next_cell._wall_b.delete()
+                    self._animate(ANIMATION_DELAY_BREAK)
             
             next_cell._broken_in = True
-            self._draw_cell(nx, ny, ANIMATION_DELAY_BREAK)
+            #self._draw_cell(nx, ny, ANIMATION_DELAY_BREAK)
 
             self._break_walls_i_r(nx, ny)
 
@@ -251,17 +268,17 @@ class Cell:
         self.has_bottom_wall = True
         self.has_left_wall = True
 
-        self.corner_tl = None
-        self.corner_tr = None
-        self.corner_bl = None
-        self.corner_br = None
+        self.corner_tl : Wall | None = None
+        self.corner_tr : Wall | None = None
+        self.corner_bl : Wall | None = None
+        self.corner_br : Wall | None = None
 
-        self._wall_t = None
-        self._wall_r = None
-        self._wall_b = None
-        self._wall_l = None
+        self._wall_t : Wall | None = None
+        self._wall_r : Wall | None = None
+        self._wall_b : Wall | None = None
+        self._wall_l : Wall | None = None
     
-    def redraw(self):
+    def draw(self):
         if self._window == None:
             return
 
@@ -404,7 +421,7 @@ class Wall:
                 else:
                     self._light = None
                     self._dark = None
-                    
+
                 self._top = self._window._canvas.create_rectangle(
                     ((x - corner - HEIGHT_WALL), (y - corner - HEIGHT_WALL)),
                     ((x + corner - HEIGHT_WALL), (y + corner - HEIGHT_WALL)),
