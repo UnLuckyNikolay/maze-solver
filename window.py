@@ -10,7 +10,7 @@ class Window:
         self._root = Tk() # Check args
         self._root.title("Maze Solver")
         self._root.update()
-        self._root.attributes("-fullscreen", True)
+        self._root.attributes("-fullscreen", SCREEN_FULLSCREEN)
         self._canvas = Canvas(self._root, bg=COLOR_BACKGROUND, height=height, width=width)
         self._canvas.pack(expand=1, fill=BOTH)
         self._running = True

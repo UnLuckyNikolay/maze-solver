@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from time import sleep
+from enum import Enum
 import random
 
 from constants import *
 from window import Window, Line, Point
 
+class CellWall(Enum):
+    RIGHT = "right"
+    BOTTOM = "bottom"
+    LEFT = "left"
+    TOP = "top"
+    
 
 class Maze:
     def __init__(self, x1 : int, y1 : int, num_cols : int, num_rows : int, cell_size : int, window : Window | None = None, seed : int | None = None):
@@ -52,7 +59,7 @@ class Maze:
         sleep(delay)
 
     def _break_entrance_and_exit(self):
-        self._cells[0][0].has_upper_wall = False
+        self._cells[0][0].has_top_wall = False
         self._draw_cell(0, 0, ANIMATION_DELAY_BREAK)
         self._cells[self._num_cols-1][self._num_rows-1].has_bottom_wall = False
         self._draw_cell(self._num_cols-1, self._num_rows-1, ANIMATION_DELAY_BREAK)
@@ -97,9 +104,9 @@ class Maze:
                 next_cell.has_right_wall = False
             elif current_cell._y1 < next_cell._y1:
                 current_cell.has_bottom_wall = False
-                next_cell.has_upper_wall = False
+                next_cell.has_top_wall = False
             else:
-                current_cell.has_upper_wall = False
+                current_cell.has_top_wall = False
                 next_cell.has_bottom_wall = False
             
             next_cell._broken_in = True
@@ -108,9 +115,9 @@ class Maze:
             self._break_walls_i_r(nx, ny)
 
     def solve(self) -> bool:        
-        return self._solve_i_r(0, 0, True)
+        return self._solve_i_r(0, 0)
 
-    def _solve_i_r(self, x : int, y : int, is_entrance : bool) -> bool:
+    def _solve_i_r(self, x : int, y : int) -> bool:
         if self._window != None and self._window._running == False:
             return False
         
@@ -121,9 +128,14 @@ class Maze:
         current_cell = self._cells[x][y]
         current_cell._visited = True
 
-        if not current_cell.has_right_wall and self._cells[x+1][y]._visited == False:
+        # Pathing checks
+        # Right
+        if (
+                not current_cell.has_right_wall 
+                and self._cells[x+1][y]._visited == False
+            ):
             current_cell.draw_path_to(self._cells[x+1][y])
-            right = self._solve_i_r(x+1, y, False)
+            right = self._solve_i_r(x+1, y)
             if right:
                 return True
             else: 
@@ -132,9 +144,13 @@ class Maze:
         else:
             right = False
 
-        if not current_cell.has_bottom_wall and self._cells[x][y+1]._visited == False:
+        # Bottom
+        if (
+                not current_cell.has_bottom_wall
+                and self._cells[x][y+1]._visited == False
+            ):
             current_cell.draw_path_to(self._cells[x][y+1])
-            bottom = self._solve_i_r(x, y+1, False)
+            bottom = self._solve_i_r(x, y+1)
             if bottom:
                 return True
             else: 
@@ -143,35 +159,63 @@ class Maze:
         else:
             bottom = False
 
-        if not current_cell.has_left_wall and self._cells[x-1][y]._visited == False:
+        # Left
+        if (
+                not current_cell.has_left_wall
+                and y > 0
+                and y < self._num_rows - 1
+                and self._cells[x-1][y]._visited == False
+            ):
             current_cell.draw_path_to(self._cells[x-1][y])
-            left = self._solve_i_r(x-1, y, False)
+            left = self._solve_i_r(x-1, y)
             if left:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x-1][y], True)
                 self._animate(ANIMATION_DELAY_UNDO)
+        elif (
+                not current_cell.has_left_wall
+                and self._cells[x-1][y]._visited == False
+                and (y == 0 or y == self._num_rows - 1)
+              ):
+            left = False
+            if DEBUG_CHECK_DEAD_END:
+                current_cell.draw_cross(CellWall.LEFT)
         else:
             left = False
 
-        if not is_entrance and not current_cell.has_upper_wall and self._cells[x][y-1]._visited == False:
+        # Top
+        if (
+                not current_cell.has_top_wall
+                and x > 0
+                and x < self._num_cols - 1
+                and self._cells[x][y-1]._visited == False
+            ):
             current_cell.draw_path_to(self._cells[x][y-1])
-            upper = self._solve_i_r(x, y-1, False)
-            if upper:
+            top = self._solve_i_r(x, y-1)
+            if top:
                 return True
             else: 
                 current_cell.draw_path_to(self._cells[x][y-1], True)
                 self._animate(ANIMATION_DELAY_UNDO)
+        elif (
+                not current_cell.has_top_wall
+                and self._cells[x][y-1]._visited == False
+                and (x == 0 or x == self._num_cols - 1)
+            ):
+            top = False
+            if DEBUG_CHECK_DEAD_END:
+                current_cell.draw_cross(CellWall.TOP)
         else:
-            upper = False
+            top = False
 
-        return right or bottom or left or upper
+        return right or bottom or left or top
             
         
 
 class Cell:
     def __init__(self, window : Window | None = None):
-        self.has_upper_wall = True
+        self.has_top_wall = True
         self.has_right_wall = True
         self.has_bottom_wall = True
         self.has_left_wall = True
@@ -193,7 +237,7 @@ class Cell:
             return
 
         # Walls
-        if self.has_upper_wall:
+        if self.has_top_wall:
             self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_WALL)
         else:
             self.draw_wall(Point(self._x1, self._y1), Point(self._x2, self._y1), COLOR_BACKGROUND)
@@ -219,9 +263,10 @@ class Cell:
         self.draw_corner(Point(self._x2, self._y2))
         self.draw_corner(Point(self._x2, self._y1))
 
-        if CHECK_BROKEN_IN_CELL and self._broken_in:
-            self._window.draw_line(Line(Point(self._x1+5, self._y1+5), Point(self._x1+10, self._y1+10)), COLOR_CHECK)
-            self._window.draw_line(Line(Point(self._x1+10, self._y1+10), Point(self._x1+15, self._y1+5)), COLOR_CHECK)
+        # Debug check marks for broken in cells
+        if DEBUG_CHECK_BROKEN_IN_CELL and self._broken_in:
+            self._window.draw_line(Line(Point(self._x1+5, self._y1+5), Point(self._x1+10, self._y1+10)), DEBUG_CHECK_BROKEN_IN_COLOR)
+            self._window.draw_line(Line(Point(self._x1+10, self._y1+10), Point(self._x1+15, self._y1+5)), DEBUG_CHECK_BROKEN_IN_COLOR)
 
     def draw_wall(self, point1 : Point, point2 : Point, color : str):
         if self._window == None:
@@ -255,7 +300,27 @@ class Cell:
         self._window.draw_line(Line(Point(point.x + dist, point.y + dist), Point(point.x - dist, point.y + dist)), COLOR_WALL)
         self._window.draw_line(Line(Point(point.x - dist, point.y + dist), Point(point.x - dist, point.y - dist)), COLOR_WALL)
 
+    def draw_cross(self, wall : CellWall):
+        if self._window == None:
+            return
         
+        match (wall):
+            case CellWall.RIGHT:
+                x = self._x2
+                y = int((self._y1 + self._y2) / 2)
+            case CellWall.BOTTOM:
+                x = int((self._x1 + self._x2) / 2)
+                y = self._y2
+            case CellWall.LEFT:
+                x = self._x1
+                y = int((self._y1 + self._y2) / 2)
+            case CellWall.TOP:
+                x = int((self._x1 + self._x2) / 2)
+                y = self._y1
+        
+        size_half = 5
+        self._window.draw_line(Line(Point(x - size_half, y - size_half), Point(x + size_half, y + size_half)), DEBUG_CHECK_DEAD_END_COLOR)
+        self._window.draw_line(Line(Point(x + size_half, y - size_half), Point(x - size_half, y + size_half)), DEBUG_CHECK_DEAD_END_COLOR)        
 
     def draw_path_to(self, to_cell : Cell, undo : bool = False):
         if self._window == None:

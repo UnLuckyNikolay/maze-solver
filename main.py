@@ -11,10 +11,17 @@ def main():
     while window._running:
         maze = Maze(MAZE_X, MAZE_Y, MAZE_COLUMNS, MAZE_ROWS, 50, window)
         maze.solve()
-        if window._running:
-            sleep(RESTART_DELAY)
+        interruptible_sleep(window, 5)
         window._canvas.delete("all")
     window.wait_for_close()
+
+def interruptible_sleep(window : Window, seconds):
+    tens = int(seconds // 0.1)
+    for i in range(tens):
+        sleep(0.1)
+        window.redraw()
+        if not window._running:
+            return
 
 
 if __name__ == "__main__":

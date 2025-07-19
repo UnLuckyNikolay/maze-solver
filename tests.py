@@ -22,7 +22,7 @@ class TestMaze(unittest.TestCase):
 
     def test__maze__exit_and_entrance(self):
         self.assertEqual(
-            self.maze._cells[0][0].has_upper_wall,
+            self.maze._cells[0][0].has_top_wall,
             False
         )
         self.assertEqual(
