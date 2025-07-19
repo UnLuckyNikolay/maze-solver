@@ -42,9 +42,12 @@ COLOR_PATH_UNDO = "brown4"
     # LINE WIDTH
 
 WIDTH_LINE = 2
-WIDTH_WALL = 4 # Keep even
-HEIGHT_WALL = 5
-WIDTH_CORNER = 12 # Keep even
+
+# Set to 0 for 2D maze
+HEIGHT_WALL = 5 # 5
+# Keep both widths even
+WIDTH_WALL = 4 # 4
+WIDTH_CORNER = 12 # 12
 
     # DEBUG
 
