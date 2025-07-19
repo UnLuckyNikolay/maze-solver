@@ -32,7 +32,7 @@ class Window:
         self._running = False
         self._root.quit()
 
-    def draw_line(self, line : Line, fill_color : str = COLOR_WALL):
+    def draw_line(self, line : Line, fill_color : str = COLOR_WALL_TOP):
         line.draw(self._canvas, fill_color=fill_color)
 
 class Point:
