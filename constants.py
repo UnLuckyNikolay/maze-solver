@@ -1,3 +1,10 @@
+from enum import Enum
+
+class MazeGenStart(Enum):
+    ENTRANCE = "entrance"
+    MIDDLE = "middle"
+    EXIT = "exit"
+
 SCREEN_FULLSCREEN = True
 # Doesn't matter if fullscreen
 SCREEN_WIDTH = 800
@@ -11,6 +18,7 @@ MAZE_COLUMNS = 37 # 37
 MAZE_ROWS = 20 # 20
 MAZE_SEED_OVERRIDE = False
 MAZE_SEED = 1
+MAZE_GEN_START = MazeGenStart.MIDDLE
 
 CELL_SIZE = 50
 

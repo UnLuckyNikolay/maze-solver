@@ -78,8 +78,18 @@ class Maze:
             self._animate(ANIMATION_DELAY_BREAK)
 
     def _break_walls(self):
-        self._cells[self._num_cols-1][self._num_rows-1]._broken_in = True
-        self._break_walls_i_r(self._num_cols-1, self._num_rows-1)
+        match MAZE_GEN_START:
+            case MazeGenStart.ENTRANCE:
+                x = 0
+                y = 0
+            case MazeGenStart.MIDDLE:
+                x = int(self._num_cols / 2)
+                y = int(self._num_rows / 2)
+            case MazeGenStart.EXIT:
+                x = self._num_cols - 1
+                y = self._num_rows - 1
+        self._cells[x][y]._broken_in = True
+        self._break_walls_i_r(x, y)
 
     def _break_walls_i_r(self, x : int, y : int):
         possible_dir : list[tuple[int, int]] = []
